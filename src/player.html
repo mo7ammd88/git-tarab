@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TARAB_TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Readex+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #121a3f;
+    --deep: #0b1030;
+    --lapis: #1d2a63;
+    --ink: #efe7d2;
+    --dim: #9aa2c4;
+    --line: rgba(226, 181, 74, 0.22);
+    --gold: #e2b54a;
+    --v0: #e2b54a; --v1: #4fb3a9; --v2: #d9585f; --v3: #ab8fe0;
+    --display: 'Amiri', 'Noto Naskh Arabic', Georgia, serif;
+    --ui: 'Readex Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(120% 90% at 30% 35%, var(--lapis) 0%, var(--night) 55%, var(--deep) 100%) fixed;
+    background-color: var(--deep);
+    color: var(--ink);
+    font: 300 16px/1.55 var(--ui);
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+  .page {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: clamp(24px, 4vw, 64px);
+    align-items: center;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: clamp(16px, 3vw, 40px);
+    min-height: 100vh;
+  }
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr; gap: 20px; }
+  }
+
+  /* The rosette is the one bold thing on the page. */
+  .stage { position: relative; width: min(100%, 92vh); aspect-ratio: 1; margin: 0 auto; }
+  .stage canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
+  .stage .maqam-ar {
+    position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+    font: 700 clamp(30px, 5.4vw, 64px)/1 var(--display); color: var(--gold);
+    text-shadow: 0 0 24px rgba(226, 181, 74, 0.35);
+  }
+
+  .side { max-width: 560px; }
+  .brand { color: var(--dim); font-size: 14px; margin: 0 0 18px; }
+  .brand a { color: inherit; }
+  h1 {
+    font: 400 clamp(34px, 4.6vw, 58px)/1.05 var(--display);
+    margin: 0 0 6px; overflow-wrap: anywhere;
+  }
+  .verdict { font: italic 400 clamp(21px, 2.3vw, 27px)/1.3 var(--display); color: var(--gold); margin: 0; }
+  .because { margin: 8px 0 0; color: var(--ink); }
+  .blurb { margin: 6px 0 0; color: var(--dim); font-size: 15px; }
+
+  .transport { display: flex; align-items: center; gap: 16px; margin: 28px 0 8px; }
+  .play {
+    flex: none; width: 64px; height: 64px; border-radius: 50%;
+    border: 1px solid var(--gold); background: rgba(226, 181, 74, 0.12);
+    display: grid; place-items: center; cursor: pointer; transition: background .15s;
+  }
+  .play:hover { background: rgba(226, 181, 74, 0.24); }
+  .play svg { width: 24px; height: 24px; fill: var(--gold); }
+  .scrub { flex: 1; display: grid; gap: 4px; }
+  .scrub input { width: 100%; accent-color: var(--gold); }
+  .time { display: flex; justify-content: space-between; font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+  .lyric { min-height: 118px; margin: 18px 0 6px; padding-left: 16px; border-left: 2px solid var(--line); }
+  .lyric .words { font: italic 400 clamp(20px, 2.1vw, 25px)/1.3 var(--display); margin: 0; overflow-wrap: anywhere; }
+  .lyric .who { margin: 6px 0 0; font-size: 14px; color: var(--dim); }
+  .lyric .why { margin: 2px 0 0; font-size: 14px; color: var(--ink); opacity: .85; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+
+  .voices { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 4px; font-size: 15px; }
+  .voices .inst { color: var(--dim); }
+
+  fieldset { border: 0; padding: 0; margin: 20px 0 0; }
+  legend { font-size: 14px; color: var(--dim); padding: 0; margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1px solid var(--line); background: transparent; border-radius: 999px;
+    padding: 5px 12px 6px; cursor: pointer; font-size: 14px; line-height: 1.2;
+  }
+  .chip .ar { font-family: var(--display); font-size: 17px; margin-left: 4px; color: var(--gold); }
+  .chip[aria-pressed="true"] { background: var(--gold); color: var(--deep); border-color: var(--gold); }
+  .chip[aria-pressed="true"] .ar { color: var(--deep); }
+  .chip .home { font-size: 11px; opacity: .8; margin-left: 4px; }
+  .tempo { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+  .tempo input { flex: 1; accent-color: var(--gold); }
+  .tempo output { min-width: 64px; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+  .saves { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .save {
+    border: 1px solid var(--gold); color: var(--gold); background: transparent;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;
+  }
+  .save:hover { background: rgba(226, 181, 74, 0.12); }
+  .save[disabled] { opacity: .55; cursor: progress; }
+
+  details { margin-top: 28px; font-size: 14px; color: var(--dim); }
+  summary { cursor: pointer; color: var(--ink); }
+  details dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 12px 0 0; }
+  details dt { color: var(--ink); }
+  details dd { margin: 0; }
+  .facts { margin-top: 14px; font-size: 13px; color: var(--dim); }
+
+  @media (prefers-reduced-motion: reduce) { .play { transition: none; } }
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="stage">
+    <canvas id="rosette" aria-label="A rosette drawn from the music. Each dot is a commit."></canvas>
+    <div class="maqam-ar" id="maqamAr" dir="rtl" lang="ar"></div>
+  </div>
+
+  <section class="side">
+    <p class="brand">Played by <a href="__TARAB_HOME__">git-tarab</a></p>
+    <h1 id="repo"></h1>
+    <p class="verdict" id="verdict"></p>
+    <p class="because" id="because"></p>
+    <p class="blurb" id="blurb"></p>
+
+    <div class="transport">
+      <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 24 24" id="playIcon"><path d="M7 4.5v15l13-7.5z"/></svg></button>
+      <div class="scrub">
+        <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Position in the history">
+        <div class="time"><span id="now">0:00</span><span id="dur">0:00</span></div>
+      </div>
+    </div>
+
+    <div class="lyric" aria-live="off">
+      <p class="words" id="words">Press play. Your commit messages are the lyrics.</p>
+      <p class="who" id="who"></p>
+      <p class="why" id="why"></p>
+    </div>
+
+    <ul class="voices" id="voices"></ul>
+
+    <fieldset>
+      <legend>Maqam</legend>
+      <div class="chips" id="maqamat" role="group" aria-label="Maqam"></div>
+    </fieldset>
+    <fieldset>
+      <legend>Rhythm</legend>
+      <div class="chips" id="iqaat" role="group" aria-label="Rhythm"></div>
+    </fieldset>
+    <fieldset>
+      <legend>Tempo</legend>
+      <div class="tempo"><input type="range" id="tempo" min="60" max="180" step="1" aria-label="Tempo"><output id="tempoOut"></output></div>
+    </fieldset>
+
+    <div class="saves">
+      <button class="save" id="saveWav">Save audio (WAV)</button>
+      <button class="save" id="saveMidi">Save MIDI</button>
+      <button class="save" id="savePoster">Save poster</button>
+    </div>
+
+    <details>
+      <summary>How your history becomes music</summary>
+      <dl>
+        <dt>Each commit</dt><dd>is one note, played by its author's instrument.</dd>
+        <dt>Lines added</dt><dd>push the melody up. Lines removed pull it down.</dd>
+        <dt>Big commits</dt><dd>last longer and get an ornament.</dd>
+        <dt>Quiet weeks</dt><dd>become rests.</dd>
+        <dt>Fixes</dt><dd>hit the rim of the darbuka. Merges hit its centre. Reverts shake the riq and undo the last melodic step.</dd>
+        <dt>Phrases</dt><dd>come home to the tonic or the ghammaz every eight notes.</dd>
+        <dt>The opening</dt><dd>is a free-rhythm taqsim on the oud, made from your first commits.</dd>
+        <dt>The maqam</dt><dd>is chosen from the character of the repo, and the tempo from how busy it is.</dd>
+      </dl>
+      <p class="facts" id="facts"></p>
+    </details>
+  </section>
+</main>
+
+<script>
+/*__TARAB_LIBS__*/
+</script>
+<script>
+(function () {
+  'use strict';
+  const T = window.Tarab;
+  const DATA = /*__TARAB_DATA__*/;
+  const { MAQAMAT, IQAAT, INSTRUMENTS } = T;
+  const VOICE_COLORS = T.PALETTE.voices;
+  const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const commits = DATA.commits.map((r) => ({
+    sha: r[0], author: DATA.authors[r[1]], time: r[2], add: r[3], del: r[4], kind: T.KINDS[r[5]], subject: r[6],
+  }));
+  const state = { maqam: DATA.maqam, iqa: DATA.iqa, bpm: DATA.bpm };
+  let score = T.compose(commits, state);
+
+  const $ = (id) => document.getElementById(id);
+  const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const fmtDate = (t) => new Date(t * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ---------- Text ---------- */
+  function renderText() {
+    const m = MAQAMAT[state.maqam];
+    $('repo').textContent = DATA.repo;
+    $('maqamAr').textContent = m.ar;
+    $('verdict').textContent = `in maqam ${m.name}, the maqam of ${m.mood}`;
+    const home = MAQAMAT[DATA.auto.id];
+    const reason = DATA.auto.because.replace(/\.$/, '');
+    $('because').textContent = state.maqam === DATA.auto.id
+      ? `Because ${reason}.`
+      : `You picked this one. The repo's own maqam is ${home.name}, because ${reason}.`;
+    $('blurb').textContent = m.blurb;
+    document.title = `${DATA.repo} in maqam ${m.name}`;
+    $('dur').textContent = fmtTime(score.duration);
+    $('voices').innerHTML = score.voices.map((v, i) =>
+      `<li><span class="dot" style="background:${VOICE_COLORS[i]}"></span>${esc(v.author)} <span class="inst">plays the ${INSTRUMENTS[i].name.toLowerCase()}, ${v.commits} ${v.commits === 1 ? 'commit' : 'commits'}</span></li>`
+    ).join('') + (score.others ? `<li class="inst">${score.others} more ${score.others === 1 ? 'author joins' : 'authors join'} on the oud</li>` : '');
+    const st = DATA.stats;
+    $('facts').textContent = `${st.commits.toLocaleString()} commits by ${st.authors.toLocaleString()} ${st.authors === 1 ? 'person' : 'people'} over ${st.spanDays.toLocaleString()} days`
+      + (commits.length < st.commits ? `, sampled evenly down to ${commits.length} notes` : '')
+      + `. ${Math.round(st.fixRatio * 100)}% fixes, ${Math.round(st.nightRatio * 100)}% after midnight, ${Math.round(st.weekendRatio * 100)}% on weekends.`;
+  }
+
+  function renderChips() {
+    $('maqamat').innerHTML = Object.values(MAQAMAT).map((m) =>
+      `<button class="chip" data-maqam="${m.id}" aria-pressed="${m.id === state.maqam}">${m.name}<span class="ar" lang="ar">${m.ar}</span>${m.id === DATA.auto.id ? '<span class="home">yours</span>' : ''}</button>`
+    ).join('');
+    $('iqaat').innerHTML = Object.values(IQAAT).map((q) =>
+      `<button class="chip" data-iqa="${q.id}" aria-pressed="${q.id === state.iqa}">${q.name}<span class="ar" lang="ar">${q.ar}</span></button>`
+    ).join('');
+    $('tempo').value = state.bpm;
+    $('tempoOut').textContent = `${state.bpm} bpm`;
+  }
+
+  const WHY = {
+    fix: 'a fix, so the darbuka rim answers',
+    merge: 'a merge, so the darbuka sounds its deep doum',
+    revert: 'a revert: the riq shakes and the melody steps back',
+    feat: 'a new feature, with a shimmer of riq',
+    docs: 'documentation, played plainly',
+    refactor: 'a refactor',
+    other: '',
+  };
+  let lastLyric = -1;
+  function showLyric(ci) {
+    if (ci === lastLyric || ci < 0) return;
+    lastLyric = ci;
+    const c = commits[ci];
+    const note = score.notes.find((n) => n.ci === ci && !n.grace);
+    const v = note ? note.voice : 0;
+    $('words').textContent = c.subject || '(no message)';
+    $('who').innerHTML = `<span class="dot" style="background:${VOICE_COLORS[v]}"></span>${esc(c.author)}, ${fmtDate(c.time)}`;
+    const dir = c.add > c.del ? 'the melody rises' : c.del > c.add ? 'the melody falls' : 'the melody turns';
+    const lines = `+${c.add.toLocaleString()} −${c.del.toLocaleString()}`;
+    const why = note && note.taqsim ? 'part of the opening taqsim' : WHY[c.kind];
+    $('why').textContent = `${lines}, ${dir}${why ? '. ' + why[0].toUpperCase() + why.slice(1) : ''}.`;
+  }
+
+  /* ---------- Synthesis (works on live and offline audio contexts) ---------- */
+  const caches = new WeakMap();
+  function cache(ctx) {
+    if (!caches.has(ctx)) caches.set(ctx, {});
+    return caches.get(ctx);
+  }
+  function rng(seed) {
+    let s = seed >>> 0;
+    return () => ((s = Math.imul(s ^ (s >>> 15), 1 | s) + 0x6d2b79f5 >>> 0) / 4294967296);
+  }
+  function noiseBuffer(ctx) {
+    const c = cache(ctx);
+    if (c.noise) return c.noise;
+    const len = ctx.sampleRate;
+    const b = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = b.getChannelData(0);
+    const r = rng(7);
+    for (let i = 0; i < len; i++) d[i] = r() * 2 - 1;
+    return (c.noise = b);
+  }
+  // Karplus-Strong plucked string, rendered once per instrument and repitched by playbackRate.
+  function pluck(ctx, kind) {
+    const c = cache(ctx);
+    const key = 'pluck_' + kind;
+    if (c[key]) return c[key];
+    const sr = ctx.sampleRate;
+    const N = kind === 'qanun' ? 92 : 184;
+    const seconds = kind === 'qanun' ? 2.4 : 1.7;
+    const decay = kind === 'qanun' ? 0.9984 : 0.9958;
+    const len = Math.floor(sr * seconds);
+    const b = ctx.createBuffer(1, len, sr);
+    const d = b.getChannelData(0);
+    const ring = new Float32Array(N);
+    const r = rng(kind === 'qanun' ? 11 : 5);
+    let prev = 0;
+    for (let i = 0; i < N; i++) {
+      const x = r() * 2 - 1;
+      // the oud's risha (plectrum) on gut-like strings is darker than the qanun's
+      prev = kind === 'qanun' ? x : prev * 0.55 + x * 0.45;
+      ring[i] = prev;
+    }
+    let idx = 0, peak = 0;
+    for (let i = 0; i < len; i++) {
+      const a = ring[idx], nb = ring[(idx + 1) % N];
+      d[i] = a;
+      ring[idx] = decay * 0.5 * (a + nb);
+      idx = (idx + 1) % N;
+      peak = Math.max(peak, Math.abs(a));
+    }
+    for (let i = 0; i < len; i++) d[i] /= peak || 1;
+    return (c[key] = { buffer: b, f0: sr / (N + 0.5) });
+  }
+  function impulse(ctx, seconds, decayPow) {
+    const len = Math.floor(ctx.sampleRate * seconds);
+    const b = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = b.getChannelData(ch);
+      const r = rng(ch + 3);
+      for (let i = 0; i < len; i++) d[i] = (r() * 2 - 1) * Math.pow(1 - i / len, decayPow);
+    }
+    return b;
+  }
+  function buildBus(ctx) {
+    const input = ctx.createGain();
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -16; comp.knee.value = 12; comp.ratio.value = 3.5; comp.attack.value = 0.004; comp.release.value = 0.2;
+    const master = ctx.createGain(); master.gain.value = 0.9;
+    const verb = ctx.createConvolver(); verb.buffer = impulse(ctx, 2.6, 3);
+    const wet = ctx.createGain(); wet.gain.value = 0.24;
+    input.connect(comp);
+    input.connect(verb); verb.connect(wet); wet.connect(comp);
+    comp.connect(master); master.connect(ctx.destination);
+    return input;
+  }
+  const PAN = [0, -0.32, 0.3, -0.12];
+  function panner(ctx, dest, p) {
+    if (!ctx.createStereoPanner) return dest;
+    const n = ctx.createStereoPanner(); n.pan.value = p; n.connect(dest); return n;
+  }
+  function env(g, when, peak, attack, hold, release) {
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(peak, when + attack);
+    g.gain.setValueAtTime(peak, when + Math.max(attack, hold));
+    g.gain.exponentialRampToValueAtTime(0.0001, when + Math.max(attack, hold) + release);
+    return when + Math.max(attack, hold) + release;
+  }
+
+  function playNote(ctx, dest, n, when, sc) {
+    const f = sc.tonicHz * Math.pow(2, n.cents / 1200);
+    const inst = INSTRUMENTS[n.voice].id;
+    const dur = n.d * sc.eighth;
+    const out = panner(ctx, dest, PAN[n.voice] || 0);
+    if (inst === 'oud' || inst === 'qanun') {
+      const p = pluck(ctx, inst);
+      const src = ctx.createBufferSource();
+      src.buffer = p.buffer;
+      src.playbackRate.value = f / p.f0;
+      const body = ctx.createBiquadFilter();
+      body.type = inst === 'oud' ? 'lowpass' : 'highshelf';
+      body.frequency.value = inst === 'oud' ? 2600 : 3000;
+      if (inst === 'qanun') body.gain.value = 3;
+      const g = ctx.createGain();
+      const level = (inst === 'oud' ? 0.55 : 0.36) * n.vel;
+      const ring = Math.min(p.buffer.duration * p.f0 / f, Math.max(0.5, dur + (inst === 'qanun' ? 1.2 : 0.5)));
+      g.gain.setValueAtTime(level, when);
+      g.gain.setTargetAtTime(0, when + ring, 0.08);
+      src.connect(body); body.connect(g); g.connect(out);
+      src.start(when);
+      src.stop(when + ring + 0.5);
+    } else if (inst === 'ney') {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const o2 = ctx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = f * 2;
+      const g2 = ctx.createGain(); g2.gain.value = 0.12;
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 5.2;
+      const depth = ctx.createGain();
+      depth.gain.setValueAtTime(0, when); depth.gain.linearRampToValueAtTime(f * 0.007, when + Math.min(0.4, dur));
+      lfo.connect(depth); depth.connect(o.frequency); depth.connect(o2.frequency);
+      const breath = ctx.createBufferSource(); breath.buffer = noiseBuffer(ctx); breath.loop = true;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f * 2; bp.Q.value = 4;
+      const gb = ctx.createGain(); gb.gain.value = 0.22;
+      const g = ctx.createGain();
+      const end = env(g, when, 0.34 * n.vel, 0.09, dur, 0.28);
+      o.connect(g); o2.connect(g2); g2.connect(g); breath.connect(bp); bp.connect(gb); gb.connect(g); g.connect(out);
+      for (const s of [o, o2, lfo, breath]) { s.start(when); s.stop(end + 0.05); }
+    } else {
+      // kamanja: two slightly detuned bowed saws through a body filter, with late vibrato
+      const g = ctx.createGain();
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2100; lp.Q.value = 0.8;
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 5.6;
+      const depth = ctx.createGain();
+      depth.gain.setValueAtTime(0, when); depth.gain.linearRampToValueAtTime(f * 0.009, when + Math.min(0.35, dur));
+      lfo.connect(depth);
+      const oscs = [0.998, 1.003].map((k) => {
+        const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f * k;
+        depth.connect(o.frequency); o.connect(lp); return o;
+      });
+      const end = env(g, when, 0.13 * n.vel, 0.07, dur, 0.22);
+      lp.connect(g); g.connect(out);
+      for (const s of [...oscs, lfo]) { s.start(when); s.stop(end + 0.05); }
+    }
+  }
+
+  function playPerc(ctx, dest, p, when) {
+    const out = panner(ctx, dest, 0.08);
+    const v = p.vel;
+    if (p.kind === 'D') {
+      const o = ctx.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(120, when); o.frequency.exponentialRampToValueAtTime(56, when + 0.22);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, when); g.gain.exponentialRampToValueAtTime(0.85 * v, when + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, when + 0.5);
+      o.connect(g); g.connect(out); o.start(when); o.stop(when + 0.55);
+    } else if (p.kind === 'T' || p.kind === 'K') {
+      const n = ctx.createBufferSource(); n.buffer = noiseBuffer(ctx);
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = p.kind === 'T' ? 3300 : 4300; bp.Q.value = 1.4;
+      const g = ctx.createGain();
+      const len = p.kind === 'T' ? 0.075 : 0.045;
+      g.gain.setValueAtTime(0.0001, when); g.gain.exponentialRampToValueAtTime((p.kind === 'T' ? 0.6 : 0.4) * v, when + 0.002);
+      g.gain.exponentialRampToValueAtTime(0.0001, when + len);
+      n.connect(bp); bp.connect(g); g.connect(out); n.start(when, Math.random() * 0.5); n.stop(when + len + 0.02);
+      const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = p.kind === 'T' ? 860 : 1040;
+      const go = ctx.createGain();
+      go.gain.setValueAtTime(0.0001, when); go.gain.exponentialRampToValueAtTime(0.18 * v, when + 0.002);
+      go.gain.exponentialRampToValueAtTime(0.0001, when + 0.06);
+      o.connect(go); go.connect(out); o.start(when); o.stop(when + 0.08);
+    } else if (p.kind === 'R') {
+      // riq: a short shake of jingles
+      for (let k = 0; k < 3; k++) {
+        const t = when + k * 0.028;
+        const n = ctx.createBufferSource(); n.buffer = noiseBuffer(ctx);
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6500;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3 * v * (1 - k * 0.25), t + 0.003);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+        n.connect(hp); hp.connect(g); g.connect(out); n.start(t, k * 0.1); n.stop(t + 0.16);
+      }
+    }
+  }
+
+  function startDrone(ctx, dest, sc, when, fromSec) {
+    const g = ctx.createGain();
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520;
+    const end = when + Math.max(0.5, sc.duration - fromSec);
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(0.07, when + 2.5);
+    g.gain.setValueAtTime(0.07, Math.max(when + 2.5, end - 3));
+    g.gain.linearRampToValueAtTime(0, end);
+    const oscs = [0.5, 0.75, 0.502].map((k, i) => {
+      const o = ctx.createOscillator(); o.type = i === 1 ? 'sine' : 'triangle'; o.frequency.value = sc.tonicHz * k;
+      o.connect(lp); o.start(when); o.stop(end + 0.1); return o;
+    });
+    lp.connect(g); g.connect(dest);
+    return oscs;
+  }
+
+  /* ---------- Live playback ---------- */
+  const live = { ctx: null, bus: null, session: null, playing: false, startAt: 0, from: 0, ni: 0, pi: 0, timer: 0, drone: [] };
+
+  function eighthsNow() {
+    if (!live.playing) return live.from;
+    return (live.ctx.currentTime - live.startAt) / score.eighth;
+  }
+  function firstIndexAfter(list, t) {
+    let lo = 0, hi = list.length;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (list[mid].t < t) lo = mid + 1; else hi = mid; }
+    return lo;
+  }
+  function pump() {
+    const ctx = live.ctx;
+    const horizon = ctx.currentTime + 0.3;
+    const at = (t) => live.startAt + t * score.eighth;
+    while (live.ni < score.notes.length && at(score.notes[live.ni].t) < horizon) {
+      const n = score.notes[live.ni++];
+      if (at(n.t) >= ctx.currentTime - 0.02) playNote(ctx, live.session, n, Math.max(ctx.currentTime, at(n.t)), score);
+    }
+    while (live.pi < score.perc.length && at(score.perc[live.pi].t) < horizon) {
+      const p = score.perc[live.pi++];
+      if (at(p.t) >= ctx.currentTime - 0.02) playPerc(ctx, live.session, p, Math.max(ctx.currentTime, at(p.t)));
+    }
+    if (eighthsNow() >= score.total) stop(true);
+  }
+  function play() {
+    if (!live.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) { $('words').textContent = 'This browser cannot play Web Audio. Try Save MIDI instead.'; return; }
+      live.ctx = new AC();
+      live.bus = buildBus(live.ctx);
+    }
+    live.ctx.resume();
+    if (live.from >= score.total - 0.5) live.from = 0;
+    live.session = live.ctx.createGain();
+    live.session.connect(live.bus);
+    live.startAt = live.ctx.currentTime + 0.08 - live.from * score.eighth;
+    live.ni = firstIndexAfter(score.notes, live.from);
+    live.pi = firstIndexAfter(score.perc, live.from);
+    live.drone = startDrone(live.ctx, live.session, score, live.ctx.currentTime + 0.08, live.from * score.eighth);
+    live.playing = true;
+    live.timer = setInterval(pump, 30);
+    pump();
+    setPlayIcon(true);
+  }
+  function stop(finished) {
+    if (!live.playing) return;
+    live.from = finished ? score.total : eighthsNow();
+    live.playing = false;
+    clearInterval(live.timer);
+    const s = live.session, ctx = live.ctx;
+    s.gain.setTargetAtTime(0, ctx.currentTime, 0.04);
+    setTimeout(() => s.disconnect(), 400);
+    for (const o of live.drone) { try { o.stop(ctx.currentTime + 0.3); } catch (e) {} }
+    setPlayIcon(false);
+  }
+  function seekTo(eighths) {
+    const was = live.playing;
+    if (was) stop(false);
+    live.from = Math.max(0, Math.min(score.total, eighths));
+    lit.rebuild = true;
+    if (was) play();
+  }
+  function setPlayIcon(playing) {
+    $('play').setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    $('playIcon').innerHTML = playing ? '<path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/>' : '<path d="M7 4.5v15l13-7.5z"/>';
+  }
+  function recompose() {
+    const frac = live.from / score.total;
+    const was = live.playing;
+    const at = was ? eighthsNow() / score.total : frac;
+    if (was) stop(false);
+    score = T.compose(commits, state);
+    live.from = at * score.total;
+    renderText();
+    renderChips();
+    layoutCanvas();
+    if (was) play();
+  }
+
+  /* ---------- The rosette ---------- */
+  const canvas = $('rosette');
+  const g2d = canvas.getContext('2d');
+  let geo = null;            // per-note 16 positions
+  let faint = null, litLayer = null, size = 0, dpr = 1;
+  const lit = { i: 0, prevPlain: -1, rebuild: true };
+  let ripples = [];
+
+  function sym(x, y) {
+    const out = new Array(16);
+    for (let k = 0; k < 8; k++) {
+      const a = (k * Math.PI) / 4, c = Math.cos(a), s = Math.sin(a);
+      out[2 * k] = [x * c - y * s, x * s + y * c];
+      out[2 * k + 1] = [-x * c - y * s, -x * s + y * c];
+    }
+    return out;
+  }
+  function layer() {
+    const c = document.createElement('canvas');
+    c.width = c.height = Math.round(size * dpr);
+    const x = c.getContext('2d');
+    x.setTransform(dpr, 0, 0, dpr, size / 2 * dpr, size / 2 * dpr);
+    return { c, x };
+  }
+  function layoutCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    size = Math.max(200, Math.round(Math.min(rect.width, rect.height || rect.width)));
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = canvas.height = Math.round(size * dpr);
+    const R = size * 0.47;
+    const L = T.layout(score, R);
+    geo = { L, R, pts: L.pts.map((p) => ({ p, at: sym(p.x, p.y) })) };
+
+    faint = layer();
+    const f = faint.x;
+    // khatam star and tonic rings
+    f.strokeStyle = 'rgba(226,181,74,0.16)'; f.lineWidth = 1;
+    const s = R * 1.02;
+    for (const rot of [0, Math.PI / 4]) {
+      f.save(); f.rotate(rot); f.strokeRect(-s / Math.SQRT2, -s / Math.SQRT2, s * Math.SQRT2, s * Math.SQRT2); f.restore();
+    }
+    f.setLineDash([2, 6]); f.strokeStyle = 'rgba(226,181,74,0.22)';
+    for (const r of L.rings) { f.beginPath(); f.arc(0, 0, r, 0, Math.PI * 2); f.stroke(); }
+    f.setLineDash([]);
+    f.globalAlpha = 0.14;
+    for (const q of geo.pts) {
+      f.fillStyle = VOICE_COLORS[q.p.voice];
+      for (const [x, y] of q.at) { f.beginPath(); f.arc(x, y, Math.max(0.8, q.p.r * 0.7), 0, Math.PI * 2); f.fill(); }
+    }
+    f.globalAlpha = 1;
+    f.fillStyle = '#0b1030'; f.strokeStyle = 'rgba(226,181,74,0.5)';
+    f.beginPath(); f.arc(0, 0, L.r0 * 0.85, 0, Math.PI * 2); f.fill(); f.stroke();
+
+    litLayer = layer();
+    lit.rebuild = true;
+    ripples = [];
+  }
+  function lightNote(i, withRipple) {
+    const q = geo.pts[i];
+    const x = litLayer.x;
+    if (!q.p.grace && lit.prevPlain >= 0) {
+      const a = geo.pts[lit.prevPlain].at;
+      x.strokeStyle = 'rgba(239,231,210,0.22)'; x.lineWidth = 0.8;
+      x.beginPath();
+      for (let k = 0; k < 16; k++) { x.moveTo(a[k][0], a[k][1]); x.lineTo(q.at[k][0], q.at[k][1]); }
+      x.stroke();
+    }
+    if (!q.p.grace) lit.prevPlain = i;
+    x.fillStyle = VOICE_COLORS[q.p.voice];
+    x.globalAlpha = 0.9;
+    for (const [px, py] of q.at) { x.beginPath(); x.arc(px, py, q.p.r, 0, Math.PI * 2); x.fill(); }
+    x.globalAlpha = 1;
+    if (withRipple && !reduceMotion) {
+      ripples.push({ i, born: performance.now() });
+      if (ripples.length > 28) ripples.shift();
+    }
+  }
+  function frame() {
+    const now = eighthsNow();
+    if (lit.rebuild) {
+      litLayer.x.save(); litLayer.x.setTransform(1, 0, 0, 1, 0, 0);
+      litLayer.x.clearRect(0, 0, litLayer.c.width, litLayer.c.height); litLayer.x.restore();
+      lit.i = 0; lit.prevPlain = -1; lit.rebuild = false; ripples = [];
+      while (lit.i < score.notes.length && score.notes[lit.i].t <= now) lightNote(lit.i++, false);
+    }
+    while (lit.i < score.notes.length && score.notes[lit.i].t <= now) lightNote(lit.i++, live.playing);
+
+    g2d.setTransform(1, 0, 0, 1, 0, 0);
+    g2d.clearRect(0, 0, canvas.width, canvas.height);
+    g2d.drawImage(faint.c, 0, 0);
+    g2d.drawImage(litLayer.c, 0, 0);
+    if (ripples.length) {
+      g2d.setTransform(dpr, 0, 0, dpr, size / 2 * dpr, size / 2 * dpr);
+      const t = performance.now();
+      ripples = ripples.filter((r) => t - r.born < 700);
+      for (const r of ripples) {
+        const age = (t - r.born) / 700;
+        const q = geo.pts[r.i];
+        g2d.strokeStyle = VOICE_COLORS[q.p.voice];
+        g2d.globalAlpha = 0.7 * (1 - age);
+        g2d.lineWidth = 1.2;
+        g2d.beginPath();
+        for (const [x, y] of q.at) { g2d.moveTo(x + q.p.r + 10 * age, y); g2d.arc(x, y, q.p.r + 10 * age, 0, Math.PI * 2); }
+        g2d.stroke();
+      }
+      g2d.globalAlpha = 1;
+    }
+
+    // lyrics and the scrubber
+    const li = firstIndexAfter(score.lyrics, now + 0.001) - 1;
+    if (li >= 0 && (live.playing || now > 0)) showLyric(score.lyrics[li].ci);
+    if (!dragging) $('seek').value = Math.round((Math.min(now, score.total) / score.total) * 1000);
+    $('now').textContent = fmtTime(Math.min(now, score.total) * score.eighth);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- Saving ---------- */
+  const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'repo';
+  const fileBase = () => `${slug(DATA.repo)}-${state.maqam}`;
+  function download(blob, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+  function wav(buffer) {
+    const ch = buffer.numberOfChannels, len = buffer.length, sr = buffer.sampleRate;
+    const data = new DataView(new ArrayBuffer(44 + len * ch * 2));
+    const w = (o, s) => { for (let i = 0; i < s.length; i++) data.setUint8(o + i, s.charCodeAt(i)); };
+    w(0, 'RIFF'); data.setUint32(4, 36 + len * ch * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    data.setUint32(16, 16, true); data.setUint16(20, 1, true); data.setUint16(22, ch, true);
+    data.setUint32(24, sr, true); data.setUint32(28, sr * ch * 2, true); data.setUint16(32, ch * 2, true); data.setUint16(34, 16, true);
+    w(36, 'data'); data.setUint32(40, len * ch * 2, true);
+    const chans = []; for (let c = 0; c < ch; c++) chans.push(buffer.getChannelData(c));
+    let o = 44;
+    for (let i = 0; i < len; i++) for (let c = 0; c < ch; c++) {
+      const s = Math.max(-1, Math.min(1, chans[c][i]));
+      data.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); o += 2;
+    }
+    return new Blob([data], { type: 'audio/wav' });
+  }
+  async function renderOffline(sc) {
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const sr = 44100;
+    const ctx = new OAC(2, Math.ceil((sc.duration + 3) * sr), sr);
+    const bus = buildBus(ctx);
+    startDrone(ctx, bus, sc, 0.05, 0);
+    for (const n of sc.notes) playNote(ctx, bus, n, 0.05 + n.t * sc.eighth, sc);
+    for (const p of sc.perc) playPerc(ctx, bus, p, 0.05 + p.t * sc.eighth);
+    return ctx.startRendering();
+  }
+  window.__tarab = { renderOffline: () => renderOffline(score), score: () => score };
+
+  $('saveWav').addEventListener('click', async (e) => {
+    const b = e.currentTarget;
+    b.disabled = true; b.textContent = 'Rendering audio…';
+    try {
+      download(wav(await renderOffline(score)), fileBase() + '.wav');
+      b.textContent = 'Saved audio';
+    } catch (err) {
+      b.textContent = 'Could not render audio. Try Save MIDI';
+      console.error(err);
+    }
+    setTimeout(() => { b.disabled = false; b.textContent = 'Save audio (WAV)'; }, 2500);
+  });
+  $('saveMidi').addEventListener('click', () => {
+    download(new Blob([T.toMidi(score, `${DATA.repo} in maqam ${MAQAMAT[state.maqam].name}`)], { type: 'audio/midi' }), fileBase() + '.mid');
+  });
+  $('savePoster').addEventListener('click', () => {
+    const because = state.maqam === DATA.auto.id ? DATA.auto.because : 'it was chosen by hand';
+    const svg = T.posterSVG(score, { repo: DATA.repo, because, stats: DATA.stats });
+    const svgBlob = new Blob([svg], { type: 'image/svg+xml' });
+    const img = new Image();
+    const url = URL.createObjectURL(svgBlob);
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = 2000; c.height = 2480;
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob((png) => download(png || svgBlob, fileBase() + (png ? '.png' : '.svg')), 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); download(svgBlob, fileBase() + '.svg'); };
+    img.src = url;
+  });
+
+  /* ---------- Controls ---------- */
+  let dragging = false;
+  $('play').addEventListener('click', () => (live.playing ? stop(false) : play()));
+  canvas.addEventListener('click', () => (live.playing ? stop(false) : play()));
+  $('seek').addEventListener('pointerdown', () => { dragging = true; });
+  $('seek').addEventListener('input', (e) => {
+    if (!live.playing) { live.from = (e.target.value / 1000) * score.total; lit.rebuild = true; }
+  });
+  $('seek').addEventListener('change', (e) => { dragging = false; seekTo((e.target.value / 1000) * score.total); });
+  $('maqamat').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-maqam]'); if (!b || b.dataset.maqam === state.maqam) return;
+    state.maqam = b.dataset.maqam; recompose();
+  });
+  $('iqaat').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-iqa]'); if (!b || b.dataset.iqa === state.iqa) return;
+    state.iqa = b.dataset.iqa; recompose();
+  });
+  $('tempo').addEventListener('input', (e) => { $('tempoOut').textContent = `${e.target.value} bpm`; });
+  $('tempo').addEventListener('change', (e) => { state.bpm = +e.target.value; recompose(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !/^(INPUT|BUTTON|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) {
+      e.preventDefault(); live.playing ? stop(false) : play();
+    }
+  });
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(layoutCanvas, 120); });
+
+  renderText();
+  renderChips();
+  layoutCanvas();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
