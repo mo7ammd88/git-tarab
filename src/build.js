@@ -6,11 +6,13 @@ const { KINDS } = require('./compose.js');
 const LIBS = ['maqamat.js', 'compose.js', 'midi.js', 'poster.js'];
 
 /** JSON that is safe to drop inside a <script> tag. */
+const LS = new RegExp(String.fromCharCode(0x2028), 'g'); // line separator
+const PS = new RegExp(String.fromCharCode(0x2029), 'g'); // paragraph separator
 function scriptJSON(value) {
   return JSON.stringify(value)
     .replace(/</g, '\\u003c')
-    .replace(/ /g, '\\u2028')
-    .replace(/ /g, '\\u2029');
+    .replace(LS, '\\u2028')
+    .replace(PS, '\\u2029');
 }
 
 const escHTML = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
