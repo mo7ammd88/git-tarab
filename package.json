@@ -1,0 +1,44 @@
+{
+  "name": "git-tarab",
+  "version": "1.0.0",
+  "description": "Hear your git history as Arabic maqam music. Every commit is a note, every author an instrument, and your repo gets its own maqam.",
+  "bin": {
+    "git-tarab": "bin/git-tarab.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "README.ar.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "gallery": "node scripts/gallery.js"
+  },
+  "keywords": [
+    "git",
+    "music",
+    "maqam",
+    "arabic",
+    "sonification",
+    "cli",
+    "visualization",
+    "midi",
+    "oud",
+    "generative-art"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/mo7ammd88/git-tarab",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mo7ammd88/git-tarab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mo7ammd88/git-tarab/issues"
+  },
+  "author": "mo7ammd88"
+}
